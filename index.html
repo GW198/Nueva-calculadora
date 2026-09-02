@@ -964,11 +964,11 @@
       <div class="subtitle">Deja los campos en blanco para ingresar</div>
       <div class="input-group">
         <label>👤 Usuario</label>
-        <input type="text" id="loginUser" placeholder="(dejar en blanco)">
+        <input type="text" id="loginUser" placeholder="Usuario">
       </div>
       <div class="input-group">
         <label>🔑 Contraseña</label>
-        <input type="password" id="loginPass" placeholder="(dejar en blanco)">
+        <input type="password" id="loginPass" placeholder="Contraseña">
       </div>
       <button class="login-btn" onclick="intentarLogin()">Acceder →</button>
       <div class="login-error" id="loginError"></div>
@@ -1798,7 +1798,7 @@ function renderResults() {
   const tasa = obtenerTasaPorPlazo(currentMonth, false);
   html += `</div><div class="divider"></div>
     <div hidden class="section-label">📊 TABLA DE AMORTIZACIÓN</div>
-    <div class="tabla-dispersion">
+    <div hidden class="tabla-dispersion">
       <table>
         <thead>
           <tr><th>Mes</th>
