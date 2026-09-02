@@ -1096,7 +1096,7 @@
         </div>
       </div>
 
-      <div class="cnca-card">
+      <div hiddden class="cnca-card">
         <div class="cnca-header" onclick="toggleCNCA()">
           <h3>📋 CNCA</h3>
           <span class="cnca-toggle-icon" id="cncaToggleIcon">▼</span>
@@ -1440,7 +1440,7 @@ const PLAN_KEY = PLAN_KEYS[0] || 'OPC 2.66%';
 
 // Metadatos de los planes
 const PLAN_META = {
-  'OPC 2.66%': { label: 'OPC 2.66%', desc: 'Tasa Mensual 2.66%' }
+  'OPC 2.66%': { label: 'OPC 2.66%', desc: 'Tasa Mensual 2.66%', cat: 'CAT ~37.2%' }
 };
 
 // Tasas por plazo
@@ -1468,6 +1468,17 @@ function calcularPagoMensual(monto, plazoMeses) {
   const potencia = Math.pow(1 + i, n);
   const pago = monto * (i * potencia) / (potencia - 1);
   return pago;
+}
+
+function calcularMontoDesdePago(pagoMensual, plazoMeses) {
+  const tasaConIva = obtenerTasaPorPlazo(plazoMeses, true);
+  if (tasaConIva === 0) return pagoMensual * plazoMeses;
+  
+  const i = tasaConIva;
+  const n = plazoMeses;
+  const potencia = Math.pow(1 + i, n);
+  const monto = pagoMensual * (potencia - 1) / (i * potencia);
+  return monto;
 }
 
 function fmt(n) {
@@ -1540,25 +1551,49 @@ function encontrarResultado(planKey, monthStr, valorBusqueda) {
   const plan = DATASET[planKey];
   if (!plan) return null;
   
-  const rows = plan.rows;
-  let best = null;
+  const months = parseInt(monthStr);
   
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const pago = row[monthStr];
+  if (searchMode === 'pago') {
+    // Buscar por pago mensual - calcular el monto exacto usando la fórmula
+    const montoCalculado = calcularMontoDesdePago(valorBusqueda, months);
+    const pagoReal = calcularPagoMensual(montoCalculado, months);
     
-    if (!pago) continue;
+    // Redondear a 2 decimales para evitar problemas de precisión
+    const montoRedondeado = Math.round(montoCalculado / 500) * 500; // Redondear a múltiplos de 500
+    const pagoRedondeado = calcularPagoMensual(montoRedondeado, months);
     
-    const valorComparar = searchMode === 'pago' ? pago : row.monto;
-    
-    if (valorComparar <= valorBusqueda) {
-      best = { monto: row.monto, pago: pago };
+    // Verificar que el pago redondeado no exceda el valor buscado
+    if (pagoRedondeado <= valorBusqueda) {
+      return { monto: montoRedondeado, pago: pagoRedondeado };
     } else {
-      break;
+      // Si excede, bajar al siguiente múltiplo de 500
+      const montoAjustado = montoRedondeado - 500;
+      if (montoAjustado > 0) {
+        const pagoAjustado = calcularPagoMensual(montoAjustado, months);
+        return { monto: montoAjustado, pago: pagoAjustado };
+      }
+      return null;
     }
+  } else {
+    // Buscar por monto - usar los datos de la tabla directamente
+    const rows = plan.rows;
+    let best = null;
+    
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const pago = row[monthStr];
+      
+      if (!pago) continue;
+      
+      if (row.monto <= valorBusqueda) {
+        best = { monto: row.monto, pago: pago };
+      } else {
+        break;
+      }
+    }
+    
+    return best;
   }
-  
-  return best;
 }
 
 function obtenerTodosResultados(planKey, valorBusqueda) {
@@ -1798,7 +1833,7 @@ function renderResults() {
   const tasa = obtenerTasaPorPlazo(currentMonth, false);
   html += `</div><div class="divider"></div>
     <div hidden class="section-label">📊 TABLA DE AMORTIZACIÓN</div>
-    <div hidden class="tabla-dispersion">
+    <div class="tabla-dispersion">
       <table>
         <thead>
           <tr><th>Mes</th>
