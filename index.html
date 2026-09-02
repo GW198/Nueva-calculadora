@@ -958,24 +958,24 @@
 </style>
 </head>
 <body>
-  <div hidden id="loginOverlay">
+  <div id="loginOverlay">
     <div class="login-box">
       <div class="logo">💳 Calculadora</div>
-      <div class="subtitle">Ingresa tus credenciales para continuar</div>
+      <div class="subtitle">Deja los campos en blanco para ingresar</div>
       <div class="input-group">
         <label>👤 Usuario</label>
-        <input type="text" id="loginUser" >
+        <input type="text" id="loginUser" placeholder="(dejar en blanco)">
       </div>
       <div class="input-group">
         <label>🔑 Contraseña</label>
-        <input type="password" id="loginPass">
+        <input type="password" id="loginPass" placeholder="(dejar en blanco)">
       </div>
       <button class="login-btn" onclick="intentarLogin()">Acceder →</button>
       <div class="login-error" id="loginError"></div>
     </div>
   </div>
 
-  <div hidden id="mainContent" style="display:none;">
+  <div id="mainContent" style="display:none;">
     <div class="container">
       <div class="header">
         <h1>Calculadora</h1>
@@ -1096,7 +1096,7 @@
         </div>
       </div>
 
-      <div hidden class="cnca-card">
+      <div class="cnca-card">
         <div class="cnca-header" onclick="toggleCNCA()">
           <h3>📋 CNCA</h3>
           <span class="cnca-toggle-icon" id="cncaToggleIcon">▼</span>
@@ -1920,10 +1920,8 @@ function intentarLogin() {
   const pass = document.getElementById('loginPass').value;
   const error = document.getElementById('loginError');
 
-  const USUARIO_VALIDO = 'CANTEC';
-  const CONTRASENA_VALIDA = 'Cantec2026*';
-
-  if (user === USUARIO_VALIDO && pass === CONTRASENA_VALIDA) {
+  // Ahora el acceso se permite SOLO si ambos campos están en blanco
+  if (user === '' && pass === '') {
     document.getElementById('loginOverlay').classList.add('hidden');
     document.getElementById('mainContent').style.display = 'block';
     error.textContent = '';
@@ -1933,9 +1931,10 @@ function intentarLogin() {
     setupThemeControls();
     actualizarUITheme(savedTheme);
   } else {
-    error.textContent = '❌ Usuario o contraseña incorrectos';
+    error.textContent = '❌ Debes dejar ambos campos en blanco para ingresar';
+    document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
-    document.getElementById('loginPass').focus();
+    document.getElementById('loginUser').focus();
   }
 }
 
